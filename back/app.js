@@ -22,22 +22,27 @@ const emailService = "gmail";
 
 app.post("/send", async (req, res, next) => {
   try {
-    const { userEmail, userPass, receiverEmail } = req.body;
+    const { userName, userEmail, userPass, receiverEmail } = req.body;
 
+    if (!userName || userName === "") {
+      return res
+        .status(400)
+        .json({ message: "some field is missing (sever side) [userName]" });
+    }
     if (!userEmail || userEmail === "") {
       return res
         .status(400)
-        .json({ message: "some field is missing (sever side)" });
+        .json({ message: "some field is missing (sever side) [userEmail]" });
     }
     if (!userPass || userPass === "") {
       return res
         .status(400)
-        .json({ message: "some field is missing (sever side)" });
+        .json({ message: "some field is missing (sever side) [userPass]" });
     }
     if (!receiverEmail || receiverEmail === "") {
-      return res
-        .status(400)
-        .json({ message: "some field is missing (sever side)" });
+      return res.status(400).json({
+        message: "some field is missing (sever side) [receiverEmail]",
+      });
     }
 
     // // comment bcz want to send multiple email
@@ -47,18 +52,35 @@ app.post("/send", async (req, res, next) => {
 
     // if userPass error need to fix "App Password" or "Less secure app access"
     const transport = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      // // host setting for outlook
+      // host: "smtp-mail.outlook.com", // hostname
+      // secureConnection: false, // TLS requires secureConnection to be false
+      // port: 587, // port for secure SMTP
       service: emailService,
       auth: {
         user: userEmail,
         pass: userPass,
       },
-      from: userEmail,
+      from: `${userName} <${userEmail}>`,
     });
 
     const mailObject = {
-      from: userEmail,
+      from: `${userName} <${userEmail}>`,
       to: receiverEmail,
-      subject: "verify_code",
+      subject: `[${userName}] you verify code`,
+      text: `Welcome to Blubitex!
+
+      Please click the verification url to complete registration :
+      
+      000000
+      
+      * Make sure you are visiting "https://www.blubitex.com" or Blubitex Application!
+      
+      If you don't recognize the above activity, please contact our official customer representative via the email: info@blubitex.com
+      
+      Blubitex Team
+      This is an automated message, please do not reply.`,
       html: await readFile("../verify_code.html", "utf8"),
     };
 

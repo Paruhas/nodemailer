@@ -6,6 +6,7 @@ const isEmail =
 
 const index = () => {
   const [input, setInput] = useState({
+    userName: "",
     userEmail: "",
     userPass: "",
     receiverEmail: "",
@@ -19,8 +20,11 @@ const index = () => {
 
   const sendEmail = async (e) => {
     e.preventDefault();
-    const { userEmail, userPass, receiverEmail } = input;
+    const { userName, userEmail, userPass, receiverEmail } = input;
     try {
+      if (!userName || userName === "") {
+        throw new Error("some field is missing (client side)");
+      }
       if (!userEmail || userEmail === "") {
         throw new Error("some field is missing (client side)");
       }
@@ -37,12 +41,16 @@ const index = () => {
       // }
 
       const sendProcess = await axios.post("http://localhost:8000/send", {
+        userName: userName,
         userEmail: userEmail,
         userPass: userPass,
         receiverEmail: receiverEmail,
       });
 
-      console.log(sendProcess.data);
+      // console.log(sendProcess.data);
+      if (sendProcess) {
+        window.alert("Send Complete");
+      }
     } catch (error) {
       console.dir(error);
     }
@@ -53,6 +61,15 @@ const index = () => {
       <div>
         <h3>Send Message To Email</h3>
         <form>
+          <p>Sender Name</p>
+          <input
+            type="text"
+            placeholder="Enter user name"
+            onChange={(e) => handlerInputChange(e)}
+            name="userName"
+            value={input.userName}
+          />
+          <p>Sender Email</p>
           <input
             type="text"
             placeholder="Enter user email"
@@ -60,6 +77,7 @@ const index = () => {
             name="userEmail"
             value={input.userEmail}
           />
+          <p>Sender Password</p>
           <input
             type="password"
             placeholder="Enter user password"
@@ -67,6 +85,7 @@ const index = () => {
             name="userPass"
             value={input.userPass}
           />
+          <p>Receiver Email</p>
           <input
             type="text"
             placeholder="Enter receiver email"
@@ -82,6 +101,16 @@ const index = () => {
 
       <style jsx>
         {`
+          * {
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+          }
+
+          h3 {
+            padding-bottom: 1.5rem;
+          }
+
           div {
             display: flex;
             flex-direction: column;
@@ -94,6 +123,11 @@ const index = () => {
             display: flex;
             flex-direction: column;
             row-gap: 15px;
+          }
+
+          button {
+            margin-top: 1.5rem;
+            padding: 1rem 0;
           }
         `}
       </style>
